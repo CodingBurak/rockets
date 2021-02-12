@@ -206,10 +206,14 @@ var firework;
         allRockets = await client.getAllRockets();
     }
     async function postRocket() {
-        let rocket = {
-            name: "redrocket", color: firework.Color.YELLOW, secondColor: firework.Color.GREEN, size: firework.ScatterSize.SMALL, speed: firework.Speed.SLOW
+        let testRocket = {
+            name: rocketName.value,
+            color: Number.parseInt(colorSlider.value),
+            secondColor: Number.parseInt(secondColorSlider.value),
+            size: Number.parseFloat(sizeSlider.value),
+            speed: Number.parseInt(speedSlider.value)
         };
-        let posted = await client.postRocket(rocket);
+        let posted = await client.postRocket(testRocket);
         allRockets = await client.getAllRockets();
         console.log(posted);
         return posted;

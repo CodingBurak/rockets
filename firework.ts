@@ -151,10 +151,14 @@ namespace firework {
 
 
   async function postRocket(): Promise<RocketObject> {
-    let rocket: RocketObject = {
-      name: "redrocket", color: Color.YELLOW, secondColor: Color.GREEN, size: ScatterSize.SMALL, speed: Speed.SLOW
+    let testRocket: RocketObject = {
+      name: rocketName.value,
+      color: Number.parseInt(colorSlider.value),
+      secondColor: Number.parseInt(secondColorSlider.value),
+      size: Number.parseFloat(sizeSlider.value),
+      speed: Number.parseInt(speedSlider.value)
     }
-    let posted: RocketObject = await client.postRocket(rocket)
+    let posted: RocketObject = await client.postRocket(testRocket)
     allRockets = await client.getAllRockets();
     console.log(posted)
     return posted;
