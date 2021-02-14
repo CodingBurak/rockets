@@ -17,6 +17,7 @@ namespace firework {
       abstract update(): void;
       abstract animate(): void;
 
+      //if not faded and size not <= 1 the object still exists
       exists(): boolean {
         return this.alpha >= 0.1 && this.size >= 1;
     }

@@ -39,7 +39,9 @@ namespace firework {
         y = this.pos.y,
         r = this.size/2;
 
+      //create gradient
       let gradient: CanvasGradient = crc2.createRadialGradient(x, y, 0.1, x, y, r);
+      //set color from color variable
       gradient.addColorStop(0.5, "hsla(" + this.color + ", 100%, 50%, " + this.alpha + ")");
       gradient.addColorStop(1, "hsla(" + this.secondColor + ", 100%, 50%, " + this.alpha + ")");
         

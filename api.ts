@@ -3,7 +3,7 @@ namespace firework {
 
   export class Client {
     
-    public apiUrl: string = localhostUrl;
+    public apiUrl: string = herokuUrl;
 
     constructor() {
 

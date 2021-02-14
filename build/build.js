@@ -3,7 +3,7 @@ var firework;
 (function (firework) {
     class Client {
         constructor() {
-            this.apiUrl = firework.localhostUrl;
+            this.apiUrl = firework.herokuUrl;
         }
         async getAllRockets() {
             let settings = this.getHeaderSettings();
@@ -76,8 +76,9 @@ var firework;
 })(firework || (firework = {}));
 var firework;
 (function (firework) {
+    // server url local and heroku
     firework.localhostUrl = 'http://127.0.0.1:8081/api/';
-    firework.herokuUrl = "";
+    firework.herokuUrl = "https://firework-exercise.herokuapp.com/api/";
 })(firework || (firework = {}));
 var firework;
 (function (firework) {
@@ -103,12 +104,11 @@ var firework;
 })(firework || (firework = {}));
 var firework;
 (function (firework) {
+    //all rockets
     let rockets = [];
+    //all rocketobjects
     let allRockets = [];
     firework.allScatters = [];
-    let selectedRocket;
-    let mouseVector = { x: 400, y: 300 };
-    const MAX_PARTICLES = 4000;
     // dom elements for typescript 
     let addButton;
     let testButton;
@@ -149,21 +149,26 @@ var firework;
             let target = event.target;
             colorOutput.innerHTML = target.value;
         };
+        // show values in html
         secondColorSlider.oninput = function (event) {
             let target = event.target;
             secondColorOutput.innerHTML = target.value;
         };
+        // show values in html
         speedSlider.oninput = function (event) {
             let target = event.target;
             speedOutput.innerHTML = target.value;
         };
+        // show values in html
         sizeSlider.oninput = function (event) {
             let target = event.target;
             sizeOutput.innerHTML = target.value;
         };
+        //buttons
         addButton = document.getElementById("addRocket");
         testButton = document.getElementById("testRocket");
         firework.canvas = document.getElementById("canvas");
+        //dont do anything if no canvas available
         if (!firework.canvas)
             return;
         //add click events
@@ -246,37 +251,46 @@ var firework;
             //explode in the upper 80% of screen
             if (rockets[i].pos.y < firework.canvas.height * 0.2) {
                 firework.allScatters.push(...rockets[i].createScatter());
+                // if the condition does not met, than queue the rockets
             }
             else {
                 queueRockets.push(rockets[i]);
             }
         }
         rockets = queueRockets;
+        //explosion
         for (var i = 0; i < firework.allScatters.length; i++) {
             firework.allScatters[i].animate();
             ;
         }
     }
+    // get all rockets from server
     async function getAllRockets() {
         allRockets = await client.getAllRockets();
         printRockets();
     }
+    //print all rockets
     function printRockets() {
         let rows = allRockets;
+        //how many columns a row has
         var cols = Object.keys(rows[0]);
         var headerRow = '';
         var bodyRows = '';
         for (let i = 0; i < rows.length; i++) {
             let row = rows[i];
+            //create for each rocket a tr table row
             bodyRows += '<tr>';
             for (let j = 0; j < cols.length; j++) {
                 let colName = cols[j];
+                //add the elements row[colName] = id value, name value, etc.
                 bodyRows += '<td>' + row[colName] + '</td>';
             }
+            // add the action buttons after each row
             bodyRows += `<td>
       <a class="edit" data-index="${i}" title="Select" data-toggle="tooltip"><i class="fa fa-check"></i></a>
       <a class="delete"  data-index="${i}" title="Delete" data-toggle="tooltip"><i class="material-icons">&#xE872;</i></a>
       </td>`;
+            // close the table row
             bodyRows += '</tr>';
         }
         rocketTable.innerHTML = bodyRows;
@@ -324,6 +338,7 @@ var firework;
             this.pos = v;
             this.alpha = 1;
         }
+        //if not faded and size not <= 1 the object still exists
         exists() {
             return this.alpha >= 0.1 && this.size >= 1;
         }
@@ -357,7 +372,9 @@ var firework;
             firework.crc2.save();
             firework.crc2.globalCompositeOperation = 'lighter';
             let x = this.pos.x, y = this.pos.y, r = this.size / 2;
+            //create gradient
             let gradient = firework.crc2.createRadialGradient(x, y, 0.1, x, y, r);
+            //set color from color variable
             gradient.addColorStop(0.5, "hsla(" + this.color + ", 100%, 50%, " + this.alpha + ")");
             gradient.addColorStop(1, "hsla(" + this.secondColor + ", 100%, 50%, " + this.alpha + ")");
             firework.crc2.fillStyle = gradient;
