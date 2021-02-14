@@ -126,7 +126,7 @@ namespace firework {
   }
   // test the saved object and launch them
   function testSavedRocket(rocketobject: RocketObject): void {
-    
+     
     launchFrom(Math.random() * canvas.width * 2 / 3 + canvas.width / 6, rocketobject);
   }
 
@@ -134,6 +134,7 @@ namespace firework {
     // get the clicked element
     let target = event.currentTarget as HTMLAnchorElement;
     //get the index, which row is clicked
+    //2
     let index = Number.parseInt(target.getAttribute("data-index"))
     //get the rocket at index from rockets list
     let selectedRocket: RocketObject = allRockets[index]
@@ -205,15 +206,17 @@ namespace firework {
 
     let rows = allRockets;
     //how many columns a row has
-    var cols = Object.keys(rows[0]);
+    var cols = ["_id","name","size","color","secondColor","speed"]
 
     var headerRow = '';
     var bodyRows = '';
 
     for (let i = 0; i < rows.length; i++) {
       let row: any = rows[i];
+      
       //create for each rocket a tr table row
       bodyRows += '<tr>';
+      //cols = ["name", "siuze", "color"...]
       for (let j = 0; j < cols.length; j++) {
         let colName = cols[j];
         //add the elements row[colName] = id value, name value, etc.

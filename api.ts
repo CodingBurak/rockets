@@ -63,10 +63,6 @@ namespace firework {
             body: JSON.stringify(body)
           };
           break;
-        case 'DELETE':
-          return {
-          method: methodType 
-        }
         default:
           return {
             method: methodType,

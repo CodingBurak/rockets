@@ -1,5 +1,5 @@
 namespace firework{
-
+  // enums for fixed values
   export enum Speed {
     SLOW = 1,
     MIDDLE = 2,

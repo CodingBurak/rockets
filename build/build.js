@@ -57,10 +57,6 @@ var firework;
                         body: JSON.stringify(body)
                     };
                     break;
-                case 'DELETE':
-                    return {
-                        method: methodType
-                    };
                 default:
                     return {
                         method: methodType,
@@ -82,6 +78,7 @@ var firework;
 })(firework || (firework = {}));
 var firework;
 (function (firework) {
+    // enums for fixed values
     let Speed;
     (function (Speed) {
         Speed[Speed["SLOW"] = 1] = "SLOW";
@@ -214,6 +211,7 @@ var firework;
         // get the clicked element
         let target = event.currentTarget;
         //get the index, which row is clicked
+        //2
         let index = Number.parseInt(target.getAttribute("data-index"));
         //get the rocket at index from rockets list
         let selectedRocket = allRockets[index];
@@ -273,13 +271,14 @@ var firework;
     function printRockets() {
         let rows = allRockets;
         //how many columns a row has
-        var cols = Object.keys(rows[0]);
+        var cols = ["_id", "name", "size", "color", "secondColor", "speed"];
         var headerRow = '';
         var bodyRows = '';
         for (let i = 0; i < rows.length; i++) {
             let row = rows[i];
             //create for each rocket a tr table row
             bodyRows += '<tr>';
+            //cols = ["name", "siuze", "color"...]
             for (let j = 0; j < cols.length; j++) {
                 let colName = cols[j];
                 //add the elements row[colName] = id value, name value, etc.
@@ -446,7 +445,7 @@ var firework;
             firework.crc2.restore();
         }
         createScatter() {
-            //scatter amount ranom between max and min amount
+            //scatter amount random between max and min amount
             let count = Math.random() * this.MAX_EXPLOSION + this.MIN_EXPLOSION;
             //generate scatter objects for each rocket 
             for (let i = 0; i < count; i++) {

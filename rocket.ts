@@ -57,14 +57,14 @@ namespace firework {
         }
 
         createScatter(): Scatter[] {
-            //scatter amount ranom between max and min amount
+            //scatter amount random between max and min amount
             let count = Math.random() * this.MAX_EXPLOSION + this.MIN_EXPLOSION;
             //generate scatter objects for each rocket 
             for (let i = 0; i < count; i++) {
 
                 let scatter: Scatter = new Scatter(this.pos);
                 // area to fill the maximum angle
-                let angle: number = Math.random() * Math.PI *2 ;
+                let angle: number = Math.random() * Math.PI * 2;
 
                 // emulate 3D effect by using cosine and put more particles in the middle
                 let speed = Math.sin(Math.random() * Math.PI / 2) * 15;
