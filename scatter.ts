@@ -1,10 +1,9 @@
 namespace firework {
   export class Scatter extends Moveable {
-
+    
     public shrink: number;
     public gravity: number;
     public resistance: number;
-    //public color: number;
     public fade: number;
     
     constructor(pos: Vector) {
@@ -46,7 +45,7 @@ namespace firework {
         
 
       crc2.fillStyle = gradient;
-
+      // move in a curvy way
       crc2.beginPath();
       crc2.arc(x, y, r, 0, Math.PI * 2, true);
       crc2.closePath();
@@ -55,7 +54,7 @@ namespace firework {
       crc2.restore();
       
     }
-
+    // update the values for the movement
     update(): void {
       this.vel.x *= this.resistance;
       this.vel.y *= this.resistance;
@@ -74,6 +73,7 @@ namespace firework {
       this.alpha -= this.fade;
     }
 
+    // call both
     animate(): void {
       this.update();
       this.draw();

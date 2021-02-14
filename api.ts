@@ -2,6 +2,7 @@
 namespace firework {
 
   export class Client {
+    
     public apiUrl: string = localhostUrl;
 
     constructor() {
@@ -12,6 +13,17 @@ namespace firework {
       let settings: object = this.getHeaderSettings();
       try {
         const fetchResponse = await fetch(this.apiUrl + "rockets", settings);
+        const data: RocketObject[] = await fetchResponse.json();
+        return data
+      } catch (e) {
+        throw Error(e)
+      }
+    }
+
+   async deleteRocket(id: string) {
+      let settings: object = this.getHeaderSettings("DELETE");
+      try {
+        const fetchResponse = await fetch(this.apiUrl + "rocket/"+id, settings);
         const data: RocketObject[] = await fetchResponse.json();
         return data
       } catch (e) {
@@ -42,7 +54,6 @@ namespace firework {
     private getHeaderSettings(methodType: String = 'GET', body?: object): object {
       switch (methodType) {
         case 'POST':
-        case 'PUT':
           return {
             method: methodType,
             headers: {
@@ -52,6 +63,10 @@ namespace firework {
             body: JSON.stringify(body)
           };
           break;
+        case 'DELETE':
+          return {
+          method: methodType 
+        }
         default:
           return {
             method: methodType,

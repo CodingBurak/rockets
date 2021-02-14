@@ -1,5 +1,5 @@
 namespace firework {
- 
+ // abstract class for rocket and scatter
     export abstract class Moveable {
       public pos: Vector = { x: 0, y: 0 };
       public vel: Vector = { x: 0, y: 0 };

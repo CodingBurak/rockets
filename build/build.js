@@ -16,6 +16,17 @@ var firework;
                 throw Error(e);
             }
         }
+        async deleteRocket(id) {
+            let settings = this.getHeaderSettings("DELETE");
+            try {
+                const fetchResponse = await fetch(this.apiUrl + "rocket/" + id, settings);
+                const data = await fetchResponse.json();
+                return data;
+            }
+            catch (e) {
+                throw Error(e);
+            }
+        }
         async postRocket(rockets) {
             let settings = this.getHeaderSettings('POST');
             try {
@@ -37,7 +48,6 @@ var firework;
         getHeaderSettings(methodType = 'GET', body) {
             switch (methodType) {
                 case 'POST':
-                case 'PUT':
                     return {
                         method: methodType,
                         headers: {
@@ -47,6 +57,10 @@ var firework;
                         body: JSON.stringify(body)
                     };
                     break;
+                case 'DELETE':
+                    return {
+                        method: methodType
+                    };
                 default:
                     return {
                         method: methodType,
@@ -95,6 +109,7 @@ var firework;
     let selectedRocket;
     let mouseVector = { x: 400, y: 300 };
     const MAX_PARTICLES = 4000;
+    // dom elements for typescript 
     let addButton;
     let testButton;
     let rocketName;
@@ -106,10 +121,15 @@ var firework;
     let secondColorOutput;
     let sizeOutput;
     let speedOutput;
+    let rocketTable;
+    // server calls
     let client;
+    // first add event page load
     window.addEventListener("load", onPageLoad);
     function onPageLoad() {
+        // create new client 
         client = new firework.Client();
+        //initalize dom elements
         colorSlider = document.getElementById("colorSlider");
         secondColorSlider = document.getElementById("secondColorSlider");
         rocketName = document.getElementById("rocketName");
@@ -122,7 +142,9 @@ var firework;
         sizeOutput = document.getElementById("sizeOutput");
         sizeOutput.innerHTML = sizeSlider.value;
         speedOutput = document.getElementById("speedOutput");
-        speedOutput.innerHTML = sizeSlider.value;
+        speedOutput.innerHTML = speedSlider.value;
+        rocketTable = document.getElementById("rocketBody");
+        // show values in html
         colorSlider.oninput = function (event) {
             let target = event.target;
             colorOutput.innerHTML = target.value;
@@ -144,24 +166,31 @@ var firework;
         firework.canvas = document.getElementById("canvas");
         if (!firework.canvas)
             return;
+        //add click events
         firework.canvas.addEventListener("mousedown", launchRockets);
         addButton.addEventListener("click", postRocket);
         testButton.addEventListener("click", testRocket);
         firework.crc2 = firework.canvas.getContext("2d");
+        //add inital canvas style
         firework.canvas.style.width = '100%';
         firework.canvas.style.height = '100%';
         // ...then set the internal size to match
         firework.canvas.width = firework.canvas.offsetWidth;
         firework.canvas.height = firework.canvas.offsetHeight;
+        //set the background from canvas
         setBackground();
+        // get on page load all rocket from database
         getAllRockets();
+        //start the gameloop
         setInterval(gameLoop, 16);
     }
     function launchRockets(event) {
+        //generate a x position where the rockets start
         for (let i = 0; i < allRockets.length; i++) {
             launchFrom(Math.random() * firework.canvas.width * 2 / 3 + firework.canvas.width / 6, allRockets[i]);
         }
     }
+    // get the values from html and create new rocketobject and pass it to other function
     function testRocket() {
         let testRocket = {
             name: rocketName.value,
@@ -170,16 +199,43 @@ var firework;
             size: Number.parseFloat(sizeSlider.value),
             speed: Number.parseInt(speedSlider.value)
         };
-        launchFrom(300, testRocket);
+        launchFrom(Math.random() * firework.canvas.width * 2 / 3 + firework.canvas.width / 6, testRocket);
     }
+    // test the saved object and launch them
+    function testSavedRocket(rocketobject) {
+        launchFrom(Math.random() * firework.canvas.width * 2 / 3 + firework.canvas.width / 6, rocketobject);
+    }
+    function testSelectedRocket(event) {
+        // get the clicked element
+        let target = event.currentTarget;
+        //get the index, which row is clicked
+        let index = Number.parseInt(target.getAttribute("data-index"));
+        //get the rocket at index from rockets list
+        let selectedRocket = allRockets[index];
+        //test it
+        testSavedRocket(selectedRocket);
+    }
+    async function deleteSelectedRocket(event) {
+        // get the clicked element
+        let target = event.currentTarget;
+        //get the index, which row is clicked
+        let index = Number.parseInt(target.getAttribute("data-index"));
+        //get the rocket at index from rockets list
+        let selectedRocket = allRockets[index];
+        // delete the rocket from the rockets list
+        await client.deleteRocket(selectedRocket._id);
+        // refresh rockets, since its deleted
+        getAllRockets();
+    }
+    // launch rocket from position x and add new rocket instances by passing rocketobject
     function launchFrom(posX, rocketObj) {
-        //if (allRockets.length < 5) {
+        // set the position of the rocket
         let pos = { x: posX, y: firework.canvas.height };
+        // create new rocket instance
         let rocket = new firework.Rocket(pos, rocketObj);
         rocket.vel.y = Math.random() * -3 - 4;
-        rocket.vel.x = Math.random() * 6 - 3;
+        rocket.vel.x = Math.random() * 3 - 3;
         rockets.push(rocket);
-        //}
     }
     function gameLoop() {
         setBackground();
@@ -198,12 +254,40 @@ var firework;
         rockets = queueRockets;
         for (var i = 0; i < firework.allScatters.length; i++) {
             firework.allScatters[i].animate();
-            // render and save particles that can be rendered
             ;
         }
     }
     async function getAllRockets() {
         allRockets = await client.getAllRockets();
+        printRockets();
+    }
+    function printRockets() {
+        let rows = allRockets;
+        var cols = Object.keys(rows[0]);
+        var headerRow = '';
+        var bodyRows = '';
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            bodyRows += '<tr>';
+            for (let j = 0; j < cols.length; j++) {
+                let colName = cols[j];
+                bodyRows += '<td>' + row[colName] + '</td>';
+            }
+            bodyRows += `<td>
+      <a class="edit" data-index="${i}" title="Select" data-toggle="tooltip"><i class="fa fa-check"></i></a>
+      <a class="delete"  data-index="${i}" title="Delete" data-toggle="tooltip"><i class="material-icons">&#xE872;</i></a>
+      </td>`;
+            bodyRows += '</tr>';
+        }
+        rocketTable.innerHTML = bodyRows;
+        let editElements = document.getElementsByClassName("edit");
+        for (let i = 0; i < editElements.length; i++) {
+            editElements[i].addEventListener("click", testSelectedRocket);
+        }
+        let deleteElements = document.getElementsByClassName("delete");
+        for (let i = 0; i < deleteElements.length; i++) {
+            deleteElements[i].addEventListener("click", deleteSelectedRocket);
+        }
     }
     async function postRocket() {
         let testRocket = {
@@ -215,6 +299,7 @@ var firework;
         };
         let posted = await client.postRocket(testRocket);
         allRockets = await client.getAllRockets();
+        getAllRockets();
         console.log(posted);
         return posted;
     }
@@ -231,6 +316,7 @@ var firework;
 })(firework || (firework = {}));
 var firework;
 (function (firework) {
+    // abstract class for rocket and scatter
     class Moveable {
         constructor(v) {
             this.pos = { x: 0, y: 0 };
@@ -275,12 +361,14 @@ var firework;
             gradient.addColorStop(0.5, "hsla(" + this.color + ", 100%, 50%, " + this.alpha + ")");
             gradient.addColorStop(1, "hsla(" + this.secondColor + ", 100%, 50%, " + this.alpha + ")");
             firework.crc2.fillStyle = gradient;
+            // move in a curvy way
             firework.crc2.beginPath();
             firework.crc2.arc(x, y, r, 0, Math.PI * 2, true);
             firework.crc2.closePath();
             firework.crc2.fill();
             firework.crc2.restore();
         }
+        // update the values for the movement
         update() {
             this.vel.x *= this.resistance;
             this.vel.y *= this.resistance;
@@ -294,6 +382,7 @@ var firework;
             // fade out
             this.alpha -= this.fade;
         }
+        // call both
         animate() {
             this.update();
             this.draw();
@@ -322,39 +411,46 @@ var firework;
             this.pos.y += this.vel.y * this.speed;
         }
         draw() {
+            //dont render if object does not exist anymore
             if (!this.exists()) {
                 return;
             }
             let x = this.pos.x, y = this.pos.y, r = this.size;
+            // create gradient color
             var gradient = firework.crc2.createRadialGradient(x, y, 0.1, x, y, r);
             gradient.addColorStop(0.1, "rgba(255, 255, 0 ," + this.alpha + ")");
             gradient.addColorStop(1, "rgba(255, 0, 0, " + this.alpha + ")");
             firework.crc2.fillStyle = gradient;
             firework.crc2.beginPath();
+            // circle = rocket body
             firework.crc2.arc(x, y, this.size, 0, Math.PI * 2, true);
             firework.crc2.closePath();
             firework.crc2.fill();
             firework.crc2.restore();
         }
         createScatter() {
+            //scatter amount ranom between max and min amount
             let count = Math.random() * this.MAX_EXPLOSION + this.MIN_EXPLOSION;
-            //let scatters: Scatter[] = []
+            //generate scatter objects for each rocket 
             for (let i = 0; i < count; i++) {
                 let scatter = new firework.Scatter(this.pos);
                 // area to fill the maximum angle
                 let angle = Math.random() * Math.PI * 2;
                 // emulate 3D effect by using cosine and put more particles in the middle
                 let speed = Math.sin(Math.random() * Math.PI / 2) * 15;
+                // initialize scatter objects
                 scatter.vel.x = Math.cos(angle) * speed;
                 scatter.vel.y = Math.sin(angle) * speed;
                 scatter.size = 4;
                 scatter.resistance = this.scatterSize;
                 scatter.color = this.color;
                 scatter.secondColor = this.secondColor;
+                //get rockets scatter
                 this.scatters_.push(scatter);
             }
             return this.scatters_;
         }
+        // call both 
         animate() {
             this.update();
             this.draw();

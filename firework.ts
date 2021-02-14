@@ -10,6 +10,7 @@ namespace firework {
   let mouseVector: Vector = { x: 400, y: 300 };
   const MAX_PARTICLES: number = 4000;
 
+  // dom elements for typescript 
   let addButton: HTMLButtonElement;
   let testButton: HTMLButtonElement;
   let rocketName: HTMLInputElement;
@@ -22,13 +23,19 @@ namespace firework {
   let sizeOutput: HTMLSpanElement;
   let speedOutput: HTMLSpanElement;
 
+  let rocketTable: HTMLElement;
+  // server calls
   let client: Client;
 
+  // first add event page load
   window.addEventListener("load", onPageLoad);
 
-
+  
   function onPageLoad() {
+    // create new client 
     client = new Client();
+
+    //initalize dom elements
     colorSlider = document.getElementById("colorSlider") as HTMLInputElement;
     secondColorSlider = document.getElementById("secondColorSlider") as HTMLInputElement;
     rocketName = document.getElementById("rocketName") as HTMLInputElement;
@@ -45,10 +52,11 @@ namespace firework {
     sizeOutput.innerHTML = sizeSlider.value;
 
     speedOutput = document.getElementById("speedOutput");
-    speedOutput.innerHTML = sizeSlider.value;
+    speedOutput.innerHTML = speedSlider.value;
 
+    rocketTable = document.getElementById("rocketBody") as HTMLElement;
 
-
+    // show values in html
     colorSlider.oninput = function (event: Event): void {
       let target = event.target as HTMLInputElement;
       colorOutput.innerHTML = target.value;
@@ -75,29 +83,35 @@ namespace firework {
     if (!canvas)
       return;
 
+    //add click events
     canvas.addEventListener("mousedown", launchRockets);
     addButton.addEventListener("click", postRocket);
     testButton.addEventListener("click", testRocket);
 
     crc2 = <CanvasRenderingContext2D>canvas.getContext("2d")
+    //add inital canvas style
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     // ...then set the internal size to match
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
+    //set the background from canvas
     setBackground();
+    // get on page load all rocket from database
     getAllRockets();
+    //start the gameloop
     setInterval(gameLoop, 16);
 
   }
 
   function launchRockets(event: MouseEvent): void {
-
+    //generate a x position where the rockets start
     for (let i = 0; i < allRockets.length; i++) {
       launchFrom(Math.random() * canvas.width * 2 / 3 + canvas.width / 6, allRockets[i]);
     }
   }
 
+  // get the values from html and create new rocketobject and pass it to other function
   function testRocket(): void {
     let testRocket: RocketObject = {
       name: rocketName.value,
@@ -106,20 +120,52 @@ namespace firework {
       size: Number.parseFloat(sizeSlider.value),
       speed: Number.parseInt(speedSlider.value)
     }
-    launchFrom(300, testRocket);
+    launchFrom(Math.random() * canvas.width * 2 / 3 + canvas.width / 6, testRocket);
+  }
+  // test the saved object and launch them
+  function testSavedRocket(rocketobject: RocketObject): void {
+    
+    launchFrom(Math.random() * canvas.width * 2 / 3 + canvas.width / 6, rocketobject);
   }
 
+  function testSelectedRocket(event: Event): void {
+    // get the clicked element
+    let target = event.currentTarget as HTMLAnchorElement;
+    //get the index, which row is clicked
+    let index = Number.parseInt(target.getAttribute("data-index"))
+    //get the rocket at index from rockets list
+    let selectedRocket: RocketObject = allRockets[index]
+    //test it
+    testSavedRocket(selectedRocket)
+  }
+
+  
+  async function deleteSelectedRocket(event: Event) {
+   // get the clicked element
+    let target = event.currentTarget as HTMLAnchorElement;
+    //get the index, which row is clicked
+    let index = Number.parseInt(target.getAttribute("data-index"))
+    //get the rocket at index from rockets list
+    let selectedRocket: RocketObject = allRockets[index]
+    // delete the rocket from the rockets list
+    await client.deleteRocket(selectedRocket._id);
+    // refresh rockets, since its deleted
+    getAllRockets();
+
+  }
+  
+  // launch rocket from position x and add new rocket instances by passing rocketobject
   function launchFrom(posX: number, rocketObj: RocketObject): void {
 
-    //if (allRockets.length < 5) {
+    // set the position of the rocket
     let pos: Vector = { x: posX, y: canvas.height };
+    // create new rocket instance
     let rocket = new Rocket(pos, rocketObj);
-
+    
     rocket.vel.y = Math.random() * -3 - 4;
-    rocket.vel.x = Math.random() * 6 - 3;
+    rocket.vel.x = Math.random() * 3 - 3;
 
     rockets.push(rocket);
-    //}
   }
 
   function gameLoop(): void {
@@ -140,13 +186,49 @@ namespace firework {
     rockets = queueRockets;
     for (var i = 0; i < allScatters.length; i++) {
       allScatters[i].animate();
-      // render and save particles that can be rendered
+     
       ;
     }
   }
 
   async function getAllRockets() {
     allRockets = await client.getAllRockets()
+    printRockets()
+  }
+
+  function printRockets() {
+    let rows = allRockets;
+    var cols = Object.keys(rows[0]);
+
+    var headerRow = '';
+    var bodyRows = '';
+
+    for (let i = 0; i < rows.length; i++) {
+      let row:any = rows[i];
+      bodyRows += '<tr>';
+      for (let j = 0; j < cols.length; j++) {
+        let colName = cols[j];
+        bodyRows += '<td>' + row[colName] + '</td>';
+      }
+      bodyRows += `<td>
+      <a class="edit" data-index="${i}" title="Select" data-toggle="tooltip"><i class="fa fa-check"></i></a>
+      <a class="delete"  data-index="${i}" title="Delete" data-toggle="tooltip"><i class="material-icons">&#xE872;</i></a>
+      </td>`
+
+      bodyRows += '</tr>';
+    }
+
+    rocketTable.innerHTML = bodyRows;
+    let editElements = document.getElementsByClassName("edit");
+    for (let i = 0; i < editElements.length; i++) {
+      editElements[i].addEventListener("click", testSelectedRocket);
+    }
+
+    let deleteElements = document.getElementsByClassName("delete");
+    for (let i = 0; i < deleteElements.length; i++) {
+      deleteElements[i].addEventListener("click", deleteSelectedRocket);
+    }
+
   }
 
 
@@ -160,6 +242,7 @@ namespace firework {
     }
     let posted: RocketObject = await client.postRocket(testRocket)
     allRockets = await client.getAllRockets();
+    getAllRockets()
     console.log(posted)
     return posted;
   }
@@ -175,10 +258,6 @@ namespace firework {
     crc2.font = "30px Comic Sans MS";
     crc2.fillText(text, canvas.width / 2, canvas.height / 4);
 
-
   }
-
-
-
 
 }

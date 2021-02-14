@@ -24,34 +24,34 @@
 <body>
   <div class="container-fluid full-height">
     <div class="row full-height">
-      <div class="col-sm-3 full-height" style="background-color:white;">
+      <div class="col-sm-5 full-height" style="background-color:white;">
         <h2>Rocket <b>Types</b></h2>
         <div>
           <form>
             <div class="form-group-sm">
-              <label for="">Rocket Name</label>
+              <span>Rocket Name</span>
               <input type="text" class="form-control" id="rocketName" placeholder="Enter name"> 
-              <small id="emailHelp" class="form-text text-muted">Enter the name</small>
+              <small id="" class="form-text text-muted">Enter the name</small>
             </div>
             <div class="form-group-sm">
-              <label for="">Color</label>
+              <span>Color</span>
               <input type="range"  min="0" max="360" value="60" step="10" class="form-control" id="colorSlider">
-              <p>Value: <span id="colorOutput"></span></p>
+              <small>Value: <span id="colorOutput"></span></small>
             </div>
             <div class="form-group-sm">
-              <label for="">Second Color</label>
+              <span>Second Color</span>
               <input type="range"  min="0" max="360" value="60" step="10" class="form-control" id="secondColorSlider">
-              <p>Value: <span id="secondColorOutput"></span></p>
+              <small>Value: <span id="secondColorOutput"></span></small>
             </div>
             <div class="form-group-sm">
-              <label for="">Size</label>
+              <span>Size</span>
               <input type="range"  min="0.86" max="0.99" value="0.86" step="0.01" class="form-control" id="sizeSlider">
-              <p>Value: <span id="sizeOutput"></span></p>
+              <small>Value: <span id="sizeOutput"></span></small>
             </div>
             <div class="form-group-sm">
-              <label for="">Speed</label>
+              <span>Speed</span>
               <input type="range"  min="1" max="6" value="1" step="1" class="form-control" id="speedSlider" >
-              <p>Value: <span id="speedOutput"></span></p>
+              <small>Value: <span id="speedOutput"></span></small>
             </div>
             <button id="addRocket" type="button" class="btn btn-info add-new"><i class="fa fa-plus"></i> Add New</button>
             <button id="testRocket" type="button" class="btn btn-info add-new"><i class="fa fa-check"></i> Test</button>
@@ -60,15 +60,16 @@
         <table id="rocketsTable" class="table table-striped">
           <thead>
             <tr>
+              <th style="min-width:20px">id</th>
               <th>name</th>
               <th>size</th>
               <th>color</th>
-              <th>second color</th>
+              <th>secondColor</th>
               <th>speed</th>
               <th>actions</th>
             </tr>
           </thead>
-          <tbody id="tbody">
+          <tbody id="rocketBody">
             <tr>
               <td>Red Rocket</td>
               <td>4</td>
@@ -85,7 +86,7 @@
         </table>
       </div>
 
-      <div class="col-sm-9 full-height">
+      <div class="col-sm-7 full-height">
         <canvas id="canvas"></canvas>
       </div>
     </div>
