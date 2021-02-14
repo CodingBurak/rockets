@@ -1,14 +1,15 @@
 
 namespace firework {
 
+  //global canvasrendering
   export let crc2: CanvasRenderingContext2D;
+  //global canvas element
   export let canvas: HTMLCanvasElement;
+  //all rockets
   let rockets: Rocket[] = [];
+  //all rocketobjects
   let allRockets: RocketObject[] = [];
   export let allScatters: Scatter[] = [];
-  let selectedRocket: Rocket;
-  let mouseVector: Vector = { x: 400, y: 300 };
-  const MAX_PARTICLES: number = 4000;
 
   // dom elements for typescript 
   let addButton: HTMLButtonElement;
@@ -61,25 +62,26 @@ namespace firework {
       let target = event.target as HTMLInputElement;
       colorOutput.innerHTML = target.value;
     }
-
+     // show values in html
     secondColorSlider.oninput = function (event: Event): void {
       let target = event.target as HTMLInputElement;
       secondColorOutput.innerHTML = target.value;
     }
-
+     // show values in html
     speedSlider.oninput = function (event: Event): void {
       let target = event.target as HTMLInputElement;
       speedOutput.innerHTML = target.value;
     }
-
+     // show values in html
     sizeSlider.oninput = function (event: Event): void {
       let target = event.target as HTMLInputElement;
       sizeOutput.innerHTML = target.value;
     }
-
+    //buttons
     addButton = document.getElementById("addRocket") as HTMLButtonElement;
     testButton = document.getElementById("testRocket") as HTMLButtonElement;
     canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    //dont do anything if no canvas available
     if (!canvas)
       return;
 
@@ -177,44 +179,52 @@ namespace firework {
       rockets[i].animate();
 
       //explode in the upper 80% of screen
+      
       if (rockets[i].pos.y < canvas.height * 0.2) {
         allScatters.push(...rockets[i].createScatter());
+        // if the condition does not met, than queue the rockets
       } else {
         queueRockets.push(rockets[i]);
       }
     }
     rockets = queueRockets;
+    //explosion
     for (var i = 0; i < allScatters.length; i++) {
       allScatters[i].animate();
      
       ;
     }
   }
-
+  // get all rockets from server
   async function getAllRockets() {
     allRockets = await client.getAllRockets()
     printRockets()
   }
-
+  //print all rockets
   function printRockets() {
+
     let rows = allRockets;
+    //how many columns a row has
     var cols = Object.keys(rows[0]);
 
     var headerRow = '';
     var bodyRows = '';
 
     for (let i = 0; i < rows.length; i++) {
-      let row:any = rows[i];
+      let row: any = rows[i];
+      //create for each rocket a tr table row
       bodyRows += '<tr>';
       for (let j = 0; j < cols.length; j++) {
         let colName = cols[j];
+        //add the elements row[colName] = id value, name value, etc.
         bodyRows += '<td>' + row[colName] + '</td>';
       }
+      // add the action buttons after each row
       bodyRows += `<td>
       <a class="edit" data-index="${i}" title="Select" data-toggle="tooltip"><i class="fa fa-check"></i></a>
       <a class="delete"  data-index="${i}" title="Delete" data-toggle="tooltip"><i class="material-icons">&#xE872;</i></a>
       </td>`
-
+      // close the table row
       bodyRows += '</tr>';
     }
 
